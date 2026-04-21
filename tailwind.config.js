@@ -7,13 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0F172A', // Slate 900
-        surface: '#1E293B', // Slate 800
-        primary: '#3B82F6', // Blue 500
-        secondary: '#10B981', // Emerald 500
-        accent: '#8B5CF6', // Violet 500
-        textPrimary: '#F8FAFC', // Slate 50
-        textSecondary: '#94A3B8', // Slate 400
+        background: '#F9FAF8', // Very light off-white olive tint
+        surface: '#FFFFFF', // Primary white
+        primary: '#FFFFFF', // Primary White
+        secondary: '#B5C1A2', // Pastel Olive Green
+        accent: '#839670', // Deeper Olive Accent
+        textPrimary: '#2E3A28', // Dark Olive Text
+        textSecondary: '#6B7A63', // Muted Olive Text
       },
     },
   },

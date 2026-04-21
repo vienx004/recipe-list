@@ -51,7 +51,7 @@ export const RecipeSearch: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-8 animate-in fade-in zoom-in duration-500">
       <div className="text-center space-y-4">
-        <h2 className="text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-secondary">
+        <h2 className="text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent via-secondary to-textPrimary p-3">
           What are you craving?
         </h2>
         <p className="text-lg text-textSecondary max-w-2xl mx-auto">
@@ -67,7 +67,7 @@ export const RecipeSearch: React.FC = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-surface/50 border-2 border-white/10 rounded-2xl py-4 pl-12 pr-32 text-lg text-white placeholder-textSecondary focus:bg-surface focus:border-primary focus:ring-0 transition-all shadow-xl"
+          className="w-full bg-surface/50 border-2 border-secondary/20 rounded-2xl py-4 pl-12 pr-32 text-lg text-textPrimary placeholder-textSecondary focus:bg-surface focus:border-primary focus:ring-0 transition-all shadow-xl"
           placeholder="e.g., Spicy Shrimp Tacos, or 'I have beef, rice, and broccoli'"
           required
         />
@@ -91,9 +91,9 @@ export const RecipeSearch: React.FC = () => {
         <div className="glass-panel rounded-3xl overflow-hidden mt-8 flex flex-col md:flex-row transform transition-all duration-500 hover:shadow-2xl">
           {/* Image Placeholder */}
           <div className="w-full md:w-2/5 h-64 md:h-auto relative">
-            <img 
-              src={generatedRecipe.imageUrl} 
-              alt={generatedRecipe.title} 
+            <img
+              src={generatedRecipe.imageUrl}
+              alt={generatedRecipe.title}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent md:bg-gradient-to-r" />
@@ -104,7 +104,7 @@ export const RecipeSearch: React.FC = () => {
               <div className="flex items-center gap-3 text-textSecondary mb-2 font-medium">
                 <Clock size={16} /> {generatedRecipe.prepTimeMinutes} mins
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">{generatedRecipe.title}</h3>
+              <h3 className="text-3xl font-bold text-textPrimary mb-2">{generatedRecipe.title}</h3>
               <p className="text-textSecondary leading-relaxed">{generatedRecipe.description}</p>
             </div>
 
@@ -114,7 +114,7 @@ export const RecipeSearch: React.FC = () => {
                 <ul className="space-y-2">
                   {generatedRecipe.ingredients.map((ing, i) => (
                     <li key={i} className="flex gap-2 text-sm text-textSecondary bg-background/50 p-2 rounded-lg">
-                      <span className="font-bold text-white">{ing.amount} {ing.unit}</span>
+                      <span className="font-bold text-textPrimary">{ing.amount} {ing.unit}</span>
                       {ing.name}
                     </li>
                   ))}
@@ -130,8 +130,8 @@ export const RecipeSearch: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-4 border-t border-white/10">
-              <button 
+            <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-4 border-t border-secondary/20">
+              <button
                 onClick={handleSaveToCalendar}
                 className="btn-primary flex-1 flex justify-center items-center gap-2"
               >

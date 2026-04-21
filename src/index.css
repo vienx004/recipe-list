@@ -4,22 +4,22 @@
 
 @layer base {
   body {
-    @apply bg-background text-textPrimary antialiased selection:bg-accent/30;
+    @apply bg-background text-textPrimary antialiased selection:bg-secondary/30;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-surface/80 backdrop-blur-md border border-white/10 shadow-xl transition-all duration-300;
+    @apply bg-surface/90 backdrop-blur-xl border border-secondary/20 shadow-lg shadow-secondary/5 transition-all duration-300;
   }
   .btn-primary {
-    @apply bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-medium py-2 px-4 rounded-lg shadow-lg hover:shadow-accent/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-gradient-to-r from-secondary to-accent hover:from-secondary/90 hover:to-accent/90 text-white font-semibold py-2.5 px-5 rounded-2xl shadow-lg shadow-secondary/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0;
   }
   .btn-secondary {
-    @apply bg-surface hover:bg-surface/80 text-textPrimary font-medium py-2 px-4 border border-white/10 rounded-lg transition-all duration-300;
+    @apply bg-surface hover:bg-surface/80 text-textPrimary font-medium py-2.5 px-5 border border-secondary/30 rounded-2xl transition-all duration-300 shadow-sm;
   }
   .input-field {
-    @apply bg-background border border-white/10 text-textPrimary text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 transition-all duration-300 placeholder-textSecondary;
+    @apply bg-surface border border-secondary/30 text-textPrimary text-sm rounded-2xl focus:ring-accent focus:border-accent block w-full p-3 transition-all duration-300 placeholder-textSecondary shadow-sm;
   }
 }
 
@@ -32,8 +32,8 @@
   @apply bg-background;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-surface rounded-full border border-white/5;
+  @apply bg-secondary/50 rounded-full border border-surface;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-surface/80;
+  @apply bg-secondary;
 }

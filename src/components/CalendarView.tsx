@@ -37,27 +37,27 @@ export const CalendarView: React.FC = () => {
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-bold text-white mb-1">Meal Calendar</h2>
+          <h2 className="text-3xl font-bold text-textPrimary mb-1">Meal Calendar</h2>
           <p className="text-textSecondary">Plan your meals for the week.</p>
         </div>
         
         <div className="flex items-center gap-4 glass-panel px-4 py-2 rounded-xl">
-          <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-            <ChevronLeft size={20} className="text-textSecondary hover:text-white" />
+          <button onClick={prevMonth} className="p-2 hover:bg-surface rounded-lg transition-colors">
+            <ChevronLeft size={20} className="text-textSecondary hover:text-textPrimary" />
           </button>
           <span className="text-lg font-bold min-w-[140px] text-center text-primary">
             {format(currentDate, 'MMMM yyyy')}
           </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-            <ChevronRight size={20} className="text-textSecondary hover:text-white" />
+          <button onClick={nextMonth} className="p-2 hover:bg-surface rounded-lg transition-colors">
+            <ChevronRight size={20} className="text-textSecondary hover:text-textPrimary" />
           </button>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="flex-1 glass-panel rounded-2xl overflow-hidden border border-white/10 flex flex-col min-h-[600px]">
+      <div className="flex-1 glass-panel rounded-2xl overflow-hidden border border-secondary/20 flex flex-col min-h-[600px]">
         {/* Days of Week Header */}
-        <div className="grid grid-cols-7 border-b border-white/10 bg-surface/50">
+        <div className="grid grid-cols-7 border-b border-secondary/20 bg-surface/50">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <div key={day} className="py-3 text-center text-sm font-semibold text-textSecondary uppercase tracking-wider">
               {day}
@@ -75,7 +75,7 @@ export const CalendarView: React.FC = () => {
             return (
               <div 
                 key={i} 
-                className={`min-h-[120px] p-2 border-b border-r border-white/5 transition-colors group
+                className={`min-h-[120px] p-2 border-b border-r border-secondary/20 transition-colors group
                   ${isCurrentMonth ? 'bg-background/20' : 'bg-background/50 opacity-50'}
                   ${isToday ? 'bg-primary/5' : ''}
                   hover:bg-surface/50
@@ -83,7 +83,7 @@ export const CalendarView: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className={`text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full
-                    ${isToday ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-textSecondary'}
+                    ${isToday ? 'bg-primary text-textPrimary shadow-lg shadow-primary/20' : 'text-textSecondary'}
                   `}>
                     {format(day, 'd')}
                   </span>
@@ -93,7 +93,7 @@ export const CalendarView: React.FC = () => {
                   {dayRecipes.map(r => (
                     <div 
                       key={r.id} 
-                      className="text-xs bg-gradient-to-r from-accent/20 to-primary/20 border border-white/10 px-2 py-1.5 rounded-lg text-white truncate flex items-center gap-1 group-hover:from-accent/30 group-hover:to-primary/30 transition-all cursor-pointer"
+                      className="text-xs bg-gradient-to-r from-accent/20 to-primary/20 border border-secondary/20 px-2 py-1.5 rounded-lg text-textPrimary truncate flex items-center gap-1 group-hover:from-accent/30 group-hover:to-primary/30 transition-all cursor-pointer"
                       title={r.title}
                     >
                       <ChefHat size={12} className="shrink-0 text-accent" />
