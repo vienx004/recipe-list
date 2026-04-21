@@ -19,6 +19,9 @@ interface StoreContextType {
   deleteRecipe: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   isFirebaseActive: boolean;
+  inStockItems: string[];
+  addInStockItem: (name: string) => void;
+  removeInStockItem: (name: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -26,6 +29,27 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
+
+  const [inStockItems, setInStockItems] = useState<string[]>(() => {
+    const raw = localStorage.getItem('local_instock');
+    return raw ? JSON.parse(raw) : [];
+  });
+
+  const saveInStockItems = (items: string[]) => {
+    localStorage.setItem('local_instock', JSON.stringify(items));
+    setInStockItems(items);
+  };
+
+  const addInStockItem = (name: string) => {
+    const formatted = name.toLowerCase().trim();
+    if (formatted && !inStockItems.includes(formatted)) {
+      saveInStockItems([...inStockItems, formatted]);
+    }
+  };
+
+  const removeInStockItem = (name: string) => {
+    saveInStockItems(inStockItems.filter(i => i !== name.toLowerCase().trim()));
+  };
 
   // Use LocalStorage as a fallback mechanism so the UX is preserved
   const getLocalRecipes = (): Recipe[] => {
@@ -115,7 +139,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <StoreContext.Provider value={{ recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive }}>
+    <StoreContext.Provider value={{
+      recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
+      inStockItems, addInStockItem, removeInStockItem
+    }}>
       {children}
     </StoreContext.Provider>
   );

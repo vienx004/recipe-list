@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { ChefHat, CalendarDays, ShoppingCart, Heart, Search } from 'lucide-react';
+import { ChefHat, CalendarDays, ShoppingCart, Heart, Search, PackageOpen } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const Layout: React.FC = () => {
@@ -17,6 +17,7 @@ export const Layout: React.FC = () => {
     { to: '/favorites', icon: <Heart size={20} />, label: 'Favorites' },
     { to: '/calendar', icon: <CalendarDays size={20} />, label: 'Calendar' },
     { to: '/groceries', icon: <ShoppingCart size={20} />, label: 'Groceries' },
+    { to: '/instock', icon: <PackageOpen size={20} />, label: 'In Stock' },
   ];
 
   return (

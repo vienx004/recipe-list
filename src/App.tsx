@@ -12,6 +12,8 @@ import { RecipeList } from './components/RecipeList';
 import { CalendarView } from './components/CalendarView';
 import { GroceryList } from './components/GroceryList';
 
+import { InStock } from './components/InStock';
+
 export const App: React.FC = () => {
   return (
     <StoreProvider>
@@ -22,6 +24,7 @@ export const App: React.FC = () => {
             <Route path="favorites" element={<RecipeList />} />
             <Route path="calendar" element={<CalendarView />} />
             <Route path="groceries" element={<GroceryList />} />
+            <Route path="instock" element={<InStock />} />
           </Route>
         </Routes>
       </BrowserRouter>

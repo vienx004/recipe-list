@@ -8,7 +8,7 @@ import { ShoppingCart, CheckSquare, Square } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const GroceryList: React.FC = () => {
-  const { recipes } = useStore();
+  const { recipes, inStockItems } = useStore();
 
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
@@ -75,7 +75,8 @@ export const GroceryList: React.FC = () => {
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {aggregatedIngredients.map((item, idx) => {
             const itemId = `${item.name}-${item.unit}`;
-            const isChecked = checkedItems.has(itemId);
+            // True if manually checked off OR naturally existing inside pantry
+            const isChecked = checkedItems.has(itemId) || inStockItems.some(stock => item.name.toLowerCase() === stock || item.name.toLowerCase().includes(stock));
             return (
               <li
                 key={idx}

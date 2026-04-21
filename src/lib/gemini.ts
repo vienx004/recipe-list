@@ -45,12 +45,20 @@ export async function generateRecipe(query: string): Promise<Recipe> {
     You are an expert culinary chef. The user wants a recipe based on this request: "${query}".
     Create a highly appetizing, easy-to-follow recipe. Include realistic prep times and vivid descriptions.
     
+    CRITICAL INGREDIENT INSTRUCTION:
+    For the "name" field of each ingredient, you MUST use ONLY the base, simple root form of the item. Strip away any preparation, form, or state adjectives. 
+    Examples: 
+      - Use "carrot" instead of "diced carrots" or "shredded carrots"
+      - Use "lemon" instead of "lemon zest" or "lemon wedges"
+      - Use "chicken breast" instead of "boneless skinless chicken breast cut into cubes"
+      - Use "garlic" instead of "minced garlic cloves"
+      
     You MUST return the output ONLY as a valid JSON object with the following schema, and zero markdown formatting (do not wrap in \`\`\`json).
     {
       "title": "Recipe Title",
       "description": "Appetizing description of the recipe",
       "ingredients": [
-        { "name": "Ingredient name", "amount": 1.5, "unit": "cups" }
+        { "name": "base ingredient name", "amount": 1.5, "unit": "cups" }
       ],
       "instructions": [
         "Step 1...",
