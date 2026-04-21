@@ -14,7 +14,7 @@ import { db, RECIPES_COLLECTION } from './firebase';
 
 interface StoreContextType {
   recipes: Recipe[];
-  addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<void>;
+  addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<Recipe>;
   updateRecipe: (recipe: Recipe) => Promise<void>;
   deleteRecipe: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
@@ -22,6 +22,8 @@ interface StoreContextType {
   inStockItems: string[];
   addInStockItem: (name: string) => void;
   removeInStockItem: (name: string) => void;
+  selectedRecipe: Recipe | null;
+  setSelectedRecipe: (recipe: Recipe | null) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const [inStockItems, setInStockItems] = useState<string[]>(() => {
     const raw = localStorage.getItem('local_instock');
@@ -95,12 +98,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         const docRef = doc(collection(db, RECIPES_COLLECTION), newRecipe.id);
         await setDoc(docRef, newRecipe);
-        return;
+        return newRecipe;
       } catch (err) {
         console.error("Firebase save failed:", err);
       }
     }
     saveLocalRecipes([...recipes, newRecipe]);
+    return newRecipe;
   };
 
   const updateRecipe = async (recipe: Recipe) => {
@@ -141,7 +145,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <StoreContext.Provider value={{
       recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
-      inStockItems, addInStockItem, removeInStockItem
+      inStockItems, addInStockItem, removeInStockItem,
+      selectedRecipe, setSelectedRecipe
     }}>
       {children}
     </StoreContext.Provider>

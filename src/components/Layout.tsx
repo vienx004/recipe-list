@@ -8,6 +8,7 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { ChefHat, CalendarDays, ShoppingCart, Heart, Search, PackageOpen } from 'lucide-react';
 import { useStore } from '../lib/store';
+import { RecipeModal } from './RecipeModal';
 
 export const Layout: React.FC = () => {
   const { isFirebaseActive } = useStore();
@@ -91,6 +92,9 @@ export const Layout: React.FC = () => {
           </NavLink>
         ))}
       </nav>
+      
+      {/* Global Modals */}
+      <RecipeModal />
     </div>
   );
 };

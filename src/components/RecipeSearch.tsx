@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Search, Loader2, Plus, Clock } from 'lucide-react';
+import { Search, Loader2, Clock, Heart, HeartOff, CalendarDays } from 'lucide-react';
 import { generateRecipe } from '../lib/gemini';
 import { useStore } from '../lib/store';
 import type { Recipe } from '../types';
@@ -15,7 +15,7 @@ export const RecipeSearch: React.FC = () => {
   const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { addRecipe } = useStore();
+  const { addRecipe, updateRecipe, recipes } = useStore();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +24,16 @@ export const RecipeSearch: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const recipe = await generateRecipe(query);
-      setGeneratedRecipe(recipe);
+      const q = query.toLowerCase().trim();
+      const existing = recipes.find(r => r.isFavorite && r.title.toLowerCase().includes(q));
+      
+      if (existing) {
+        setGeneratedRecipe(existing);
+      } else {
+        const generated = await generateRecipe(query);
+        const savedInstance = await addRecipe(generated);
+        setGeneratedRecipe(savedInstance);
+      }
     } catch (err) {
       setError("Failed to generate recipe. Please ensure your Gemini API key is configured.");
     } finally {
@@ -33,18 +41,15 @@ export const RecipeSearch: React.FC = () => {
     }
   };
 
-  const handleSaveToCalendar = async () => {
+  const handleFavoriteToggle = async () => {
     if (!generatedRecipe) return;
     try {
-      // For this demo, let's schedule it for today if saved directly from search
-      const today = new Date().toISOString();
-      await addRecipe({ ...generatedRecipe, scheduledDate: today, isFavorite: true });
-      alert("Recipe Saved to Calendar and Favorites!");
-      setGeneratedRecipe(null);
-      setQuery('');
+      const toggled = !generatedRecipe.isFavorite;
+      await updateRecipe({ ...generatedRecipe, isFavorite: toggled });
+      setGeneratedRecipe({ ...generatedRecipe, isFavorite: toggled });
     } catch (err) {
       console.error(err);
-      alert("Error saving recipe.");
+      alert("Error updating recipe.");
     }
   };
 
@@ -132,11 +137,39 @@ export const RecipeSearch: React.FC = () => {
 
             <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-4 border-t border-secondary/20">
               <button
-                onClick={handleSaveToCalendar}
-                className="btn-primary flex-1 flex justify-center items-center gap-2"
+                onClick={handleFavoriteToggle}
+                className={`${generatedRecipe.isFavorite ? 'btn-secondary text-red-500' : 'btn-primary'} flex-1 flex justify-center items-center gap-2`}
               >
-                <Plus size={18} /> Save to My List
+                {generatedRecipe.isFavorite ? (
+                  <>
+                    <HeartOff size={18} /> Remove from Favorites
+                  </>
+                ) : (
+                  <>
+                    <Heart size={18} /> Save to Favorites
+                  </>
+                )}
               </button>
+              
+              {/* Calendar Scheduler */}
+              <div className="flex items-center gap-3 bg-secondary/5 p-3 rounded-xl border border-secondary/20 flex-1">
+                <CalendarDays className="text-secondary shrink-0" size={20} />
+                <label className="text-sm font-semibold text-textPrimary shrink-0">
+                  Cook on:
+                </label>
+                <input 
+                  type="date"
+                  value={generatedRecipe.scheduledDate ? generatedRecipe.scheduledDate.split('T')[0] : ''}
+                  onChange={async (e) => {
+                    const val = e.target.value;
+                    const newDate = val ? new Date(`${val}T12:00:00Z`).toISOString() : undefined;
+                    const updated = { ...generatedRecipe, scheduledDate: newDate, isFavorite: true };
+                    await updateRecipe(updated);
+                    setGeneratedRecipe(updated);
+                  }}
+                  className="input-field !py-1.5 !px-3 text-sm flex-1 cursor-pointer hover:border-accent"
+                />
+              </div>
             </div>
           </div>
         </div>

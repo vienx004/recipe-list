@@ -27,7 +27,9 @@ export const GroceryList: React.FC = () => {
   const aggregatedIngredients = useMemo(() => {
     const map = new Map<string, { amount: number, unit: string }>();
 
-    recipes.forEach(recipe => {
+    const scheduledRecipes = recipes.filter(r => r.scheduledDate);
+
+    scheduledRecipes.forEach(recipe => {
       recipe.ingredients.forEach(ing => {
         const key = `${ing.name.toLowerCase()}|${ing.unit.toLowerCase()}`;
         if (map.has(key)) {
@@ -66,9 +68,6 @@ export const GroceryList: React.FC = () => {
           <h2 className="text-3xl font-bold text-textPrimary mb-2">Grocery List</h2>
           <p className="text-textSecondary">Everything you need for your planned meals.</p>
         </div>
-        <button className="btn-secondary flex items-center gap-2">
-          <ShoppingCart size={18} /> Print List
-        </button>
       </div>
 
       <div className="glass-panel p-6 rounded-2xl">

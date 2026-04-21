@@ -8,7 +8,7 @@ import { Heart, Clock, Trash2 } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const RecipeList: React.FC = () => {
-  const { recipes, toggleFavorite, deleteRecipe } = useStore();
+  const { recipes, toggleFavorite, deleteRecipe, setSelectedRecipe } = useStore();
 
   const favoriteRecipes = recipes.filter(r => r.isFavorite);
 
@@ -31,7 +31,11 @@ export const RecipeList: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {favoriteRecipes.map(recipe => (
-          <div key={recipe.id} className="glass-panel rounded-2xl overflow-hidden group flex flex-col hover:border-primary/50 transition-colors">
+          <div 
+            key={recipe.id} 
+            className="glass-panel rounded-2xl overflow-hidden group flex flex-col hover:border-secondary transition-colors cursor-pointer"
+            onClick={() => setSelectedRecipe(recipe)}
+          >
             
             <div className="relative h-48 overflow-hidden">
               <img 
@@ -42,8 +46,11 @@ export const RecipeList: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
               
               <button 
-                onClick={() => toggleFavorite(recipe.id)}
-                className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur-sm rounded-full text-red-500 hover:text-textPrimary hover:bg-red-500 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(recipe.id);
+                }}
+                className="absolute top-4 right-4 p-2 bg-background/50 backdrop-blur-sm rounded-full text-red-500 hover:text-white hover:bg-red-500 transition-colors"
                 title="Remove from favorites"
               >
                 <Heart size={20} fill="currentColor" />
@@ -65,7 +72,10 @@ export const RecipeList: React.FC = () => {
                 </span>
                 
                 <button 
-                  onClick={() => deleteRecipe(recipe.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteRecipe(recipe.id);
+                  }}
                   className="ml-auto text-textSecondary hover:text-red-500 transition-colors"
                   title="Delete from cookbook entirely"
                 >
