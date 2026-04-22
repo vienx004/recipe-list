@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { ChefHat, Loader2, Mail, Lock } from 'lucide-react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { useStore } from '../lib/store';
+//import { useStore } from '../lib/store';
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
