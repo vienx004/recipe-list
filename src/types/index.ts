@@ -42,4 +42,6 @@ export interface Recipe {
   imageUrl?: string;
   /** Estimated time to cook inside minutes */
   prepTimeMinutes?: number;
+  /** Firebase Auth User ID to scope this data */
+  userId?: string;
 }

@@ -1,20 +1,20 @@
 /**
  * @file lib/store.tsx
  * @description Global state management using React Context. 
- * Handles reading/writing to Firebase, with a graceful fallback to LocalStorage
- * so the app remains fully functional even without valid Firebase credentials!
+ * Handles Firebase Authentication, reading/writing safely segregated docs to Firestore, 
+ * with a graceful fallback to LocalStorage!
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Recipe } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-// We import Firestore basics, but wrap them in try-catch
-import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db, RECIPES_COLLECTION } from './firebase';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, query, where } from 'firebase/firestore';
+import { onAuthStateChanged, type User, signOut } from 'firebase/auth';
+import { db, RECIPES_COLLECTION, auth } from './firebase';
 
 interface StoreContextType {
   recipes: Recipe[];
-  addRecipe: (recipe: Omit<Recipe, 'id'>) => Promise<Recipe>;
+  addRecipe: (recipe: Omit<Recipe, 'id' | 'userId'>) => Promise<Recipe>;
   updateRecipe: (recipe: Recipe) => Promise<void>;
   deleteRecipe: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
@@ -24,37 +24,70 @@ interface StoreContextType {
   removeInStockItem: (name: string) => void;
   selectedRecipe: Recipe | null;
   setSelectedRecipe: (recipe: Recipe | null) => void;
+  firebaseError: string | null;
+  
+  // Auth contexts
+  user: User | null;
+  authLoading: boolean;
+  logout: () => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
+  const [firebaseError, setFirebaseError] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
-  const [inStockItems, setInStockItems] = useState<string[]>(() => {
-    const raw = localStorage.getItem('local_instock');
-    return raw ? JSON.parse(raw) : [];
-  });
+  const [inStockItems, setInStockItems] = useState<string[]>([]);
 
-  const saveInStockItems = (items: string[]) => {
+  // Monitor Authentication Pipeline globally
+  useEffect(() => {
+    let unsubscribe: () => void;
+    try {
+      unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+        setAuthLoading(false);
+      });
+    } catch(err: any) {
+      console.warn("Auth initialization failed. Running offline.", err);
+      setAuthLoading(false);
+    }
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, []);
+
+  const saveLocalInStock = (items: string[]) => {
     localStorage.setItem('local_instock', JSON.stringify(items));
     setInStockItems(items);
   };
 
-  const addInStockItem = (name: string) => {
+  const addInStockItem = async (name: string) => {
     const formatted = name.toLowerCase().trim();
-    if (formatted && !inStockItems.includes(formatted)) {
-      saveInStockItems([...inStockItems, formatted]);
+    if (!formatted || inStockItems.includes(formatted)) return;
+    
+    const newItems = [...inStockItems, formatted];
+    if (user && isFirebaseActive) {
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { inStockItems: newItems }, { merge: true });
+      } catch(err) { console.error("Firebase settings save failed", err); }
     }
+    saveLocalInStock(newItems);
   };
 
-  const removeInStockItem = (name: string) => {
-    saveInStockItems(inStockItems.filter(i => i !== name.toLowerCase().trim()));
+  const removeInStockItem = async (name: string) => {
+    const updated = inStockItems.filter(i => i !== name.toLowerCase().trim());
+    if (user && isFirebaseActive) {
+       try {
+         await setDoc(doc(db, "userSettings", user.uid), { inStockItems: updated }, { merge: true });
+       } catch(err) {}
+    }
+    saveLocalInStock(updated);
   };
 
-  // Use LocalStorage as a fallback mechanism so the UX is preserved
   const getLocalRecipes = (): Recipe[] => {
     const raw = localStorage.getItem('local_recipes');
     return raw ? JSON.parse(raw) : [];
@@ -65,13 +98,28 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setRecipes(newRecipes);
   };
 
+  // Attach database listeners ONLY when auth resolves
   useEffect(() => {
-    // Attempt to listen to Firestore. If it fails (e.g. invalid mock key), fallback to local
+    if (authLoading) return;
+
+    if (!user) {
+      // Clear or load localized data strictly when logged out
+      setIsFirebaseActive(false);
+      setRecipes(getLocalRecipes());
+      const raw = localStorage.getItem('local_instock');
+      setInStockItems(raw ? JSON.parse(raw) : []);
+      return;
+    }
+
+    // Connect to securely scoped Firestore records mapped tightly to the UI User ID
     try {
       const colRef = collection(db, RECIPES_COLLECTION);
-      const unsubscribe = onSnapshot(colRef, 
+      const q = query(colRef, where("userId", "==", user.uid));
+      
+      const unsubRecipes = onSnapshot(q, 
         (snapshot) => {
           setIsFirebaseActive(true);
+          setFirebaseError(null);
           const fbRecipes: Recipe[] = [];
           snapshot.forEach((doc) => {
             fbRecipes.push({ id: doc.id, ...doc.data() } as Recipe);
@@ -80,21 +128,39 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         },
         (error) => {
           console.warn('Firestore subscription failed, falling back to LocalStorage.', error.message);
+          setFirebaseError(error.message);
           setIsFirebaseActive(false);
           setRecipes(getLocalRecipes());
         }
       );
-      return () => unsubscribe();
-    } catch (e) {
+
+      // Listen to scoped user inventory
+      const unsubSettings = onSnapshot(doc(db, "userSettings", user.uid), (docSnap) => {
+         if (docSnap.exists() && docSnap.data().inStockItems) {
+            setInStockItems(docSnap.data().inStockItems);
+            localStorage.setItem('local_instock', JSON.stringify(docSnap.data().inStockItems));
+         } else {
+            setInStockItems([]);
+         }
+      }, (error) => {
+          console.warn("Failed fetching settings", error.message);
+      });
+
+      return () => {
+         unsubRecipes();
+         unsubSettings();
+      };
+    } catch (e: any) {
       console.warn('Firestore initialization failed entirely. Using LocalStorage.');
+      setFirebaseError(e.message || "Unknown init error");
       setIsFirebaseActive(false);
       setRecipes(getLocalRecipes());
     }
-  }, []);
+  }, [user, authLoading]);
 
-  const addRecipe = async (recipe: Omit<Recipe, 'id'>) => {
-    const newRecipe: Recipe = { ...recipe, id: uuidv4() };
-    if (isFirebaseActive) {
+  const addRecipe = async (recipe: Omit<Recipe, 'id' | 'userId'>) => {
+    const newRecipe: Recipe = { ...recipe, id: uuidv4(), userId: user?.uid };
+    if (user && isFirebaseActive) {
       try {
         const docRef = doc(collection(db, RECIPES_COLLECTION), newRecipe.id);
         await setDoc(docRef, newRecipe);
@@ -108,10 +174,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateRecipe = async (recipe: Recipe) => {
-    if (isFirebaseActive) {
+    if (user && isFirebaseActive) {
       try {
         const docRef = doc(db, RECIPES_COLLECTION, recipe.id);
-        // Exclude ID from being rewritten if we just want to update data payload
         const { id, ...data } = recipe;
         await updateDoc(docRef, data as any);
         return;
@@ -123,7 +188,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteRecipe = async (id: string) => {
-    if (isFirebaseActive) {
+    if (user && isFirebaseActive) {
       try {
         const docRef = doc(db, RECIPES_COLLECTION, id);
         await deleteDoc(docRef);
@@ -142,11 +207,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   return (
     <StoreContext.Provider value={{
       recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
       inStockItems, addInStockItem, removeInStockItem,
-      selectedRecipe, setSelectedRecipe
+      selectedRecipe, setSelectedRecipe, firebaseError,
+      user, authLoading, logout
     }}>
       {children}
     </StoreContext.Provider>

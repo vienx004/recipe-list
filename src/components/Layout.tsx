@@ -6,12 +6,13 @@
 
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { ChefHat, CalendarDays, ShoppingCart, Heart, Search, PackageOpen } from 'lucide-react';
+import { ChefHat, CalendarDays, ShoppingCart, Heart, Search, PackageOpen, Loader2, LogOut } from 'lucide-react';
 import { useStore } from '../lib/store';
 import { RecipeModal } from './RecipeModal';
+import { Auth } from './Auth';
 
 export const Layout: React.FC = () => {
-  const { isFirebaseActive } = useStore();
+  const { isFirebaseActive, authLoading, user, logout, firebaseError } = useStore();
 
   const navItems = [
     { to: '/', icon: <Search size={20} />, label: 'Discover' },
@@ -20,6 +21,17 @@ export const Layout: React.FC = () => {
     { to: '/groceries', icon: <ShoppingCart size={20} />, label: 'Groceries' },
     { to: '/instock', icon: <PackageOpen size={20} />, label: 'In Stock' },
   ];
+
+  if (authLoading) return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <Loader2 size={48} className="text-secondary animate-spin mb-4" />
+      <h2 className="text-xl font-bold text-textPrimary">Syncing Profiles...</h2>
+    </div>
+  );
+
+  if (!user) {
+    return <Auth />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -35,12 +47,25 @@ export const Layout: React.FC = () => {
         </div>
 
         {/* Status Indicator for Firebase. Helpful for debugging without breaking UX */}
-        <div className="text-xs font-medium px-3 py-1.5 rounded-full border border-secondary/20 flex items-center gap-2">
+        <div className="text-xs font-medium px-3 py-1.5 rounded-full border border-secondary/20 flex items-center gap-2 relative">
           <div className={`w-2 h-2 rounded-full ${isFirebaseActive ? 'bg-secondary' : 'bg-orange-500'}`} />
           <span className="hidden sm:inline">
             {isFirebaseActive ? 'Cloud Sync Active' : 'Local Storage Mode'}
           </span>
+          {firebaseError && (
+             <span className="text-[10px] text-red-400 font-medium max-w-[250px] truncate text-right absolute top-9 right-0" title={firebaseError}>
+                Err: {firebaseError}
+             </span>
+          )}
         </div>
+        
+        <button 
+           onClick={() => logout()}
+           className="ml-4 p-2 text-textSecondary hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-full"
+           title="Sign Out"
+        >
+          <LogOut size={18} />
+        </button>
       </header>
 
       {/* Main Layout containing Side Nav and Page Content */}
