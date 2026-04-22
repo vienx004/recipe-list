@@ -25,13 +25,13 @@ interface StoreContextType {
   selectedRecipe: Recipe | null;
   setSelectedRecipe: (recipe: Recipe | null) => void;
   firebaseError: string | null;
-  
+
   // Auth contexts
   user: User | null;
   authLoading: boolean;
   logout: () => void;
   isGuestMode: boolean;
-  setIsGuestMode: (val: boolean) => void;
+  //setIsGuestMode: (val: boolean) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -44,7 +44,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [isGuestMode, setIsGuestMode] = useState(false);
+  //const [isGuestMode, setIsGuestMode] = useState(false);
 
   const [inStockItems, setInStockItems] = useState<string[]>([]);
 
@@ -56,7 +56,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setUser(currentUser);
         setAuthLoading(false);
       });
-    } catch(err: any) {
+    } catch (err: any) {
       console.warn("Auth initialization failed. Running offline.", err);
       setAuthLoading(false);
     }
@@ -71,12 +71,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addInStockItem = async (name: string) => {
     const formatted = name.toLowerCase().trim();
     if (!formatted || inStockItems.includes(formatted)) return;
-    
+
     const newItems = [...inStockItems, formatted];
     if (user && isFirebaseActive) {
       try {
         await setDoc(doc(db, "userSettings", user.uid), { inStockItems: newItems }, { merge: true });
-      } catch(err) { console.error("Firebase settings save failed", err); }
+      } catch (err) { console.error("Firebase settings save failed", err); }
     }
     saveLocalInStock(newItems);
   };
@@ -84,9 +84,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const removeInStockItem = async (name: string) => {
     const updated = inStockItems.filter(i => i !== name.toLowerCase().trim());
     if (user && isFirebaseActive) {
-       try {
-         await setDoc(doc(db, "userSettings", user.uid), { inStockItems: updated }, { merge: true });
-       } catch(err) {}
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { inStockItems: updated }, { merge: true });
+      } catch (err) { }
     }
     saveLocalInStock(updated);
   };
@@ -118,8 +118,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const colRef = collection(db, RECIPES_COLLECTION);
       const q = query(colRef, where("userId", "==", user.uid));
-      
-      const unsubRecipes = onSnapshot(q, 
+
+      const unsubRecipes = onSnapshot(q,
         (snapshot) => {
           setIsFirebaseActive(true);
           setFirebaseError(null);
@@ -139,19 +139,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       // Listen to scoped user inventory
       const unsubSettings = onSnapshot(doc(db, "userSettings", user.uid), (docSnap) => {
-         if (docSnap.exists() && docSnap.data().inStockItems) {
-            setInStockItems(docSnap.data().inStockItems);
-            localStorage.setItem('local_instock', JSON.stringify(docSnap.data().inStockItems));
-         } else {
-            setInStockItems([]);
-         }
+        if (docSnap.exists() && docSnap.data().inStockItems) {
+          setInStockItems(docSnap.data().inStockItems);
+          localStorage.setItem('local_instock', JSON.stringify(docSnap.data().inStockItems));
+        } else {
+          setInStockItems([]);
+        }
       }, (error) => {
-          console.warn("Failed fetching settings", error.message);
+        console.warn("Failed fetching settings", error.message);
       });
 
       return () => {
-         unsubRecipes();
-         unsubSettings();
+        unsubRecipes();
+        unsubSettings();
       };
     } catch (e: any) {
       console.warn('Firestore initialization failed entirely. Using LocalStorage.');
@@ -213,10 +213,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const logout = async () => {
     try {
       await signOut(auth);
-    } catch(err) {
+    } catch (err) {
       console.error(err);
     } finally {
-      setIsGuestMode(false);
+      //setIsGuestMode(false);
     }
   };
 
@@ -226,7 +226,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       inStockItems, addInStockItem, removeInStockItem,
       selectedRecipe, setSelectedRecipe, firebaseError,
       user, authLoading, logout,
-      isGuestMode, setIsGuestMode
+      isGuestMode: false
     }}>
       {children}
     </StoreContext.Provider>

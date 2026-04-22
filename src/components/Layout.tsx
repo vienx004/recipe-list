@@ -12,7 +12,7 @@ import { RecipeModal } from './RecipeModal';
 import { Auth } from './Auth';
 
 export const Layout: React.FC = () => {
-  const { isFirebaseActive, authLoading, user, logout, firebaseError, isGuestMode, setIsGuestMode } = useStore();
+  const { isFirebaseActive, authLoading, user, logout, firebaseError, isGuestMode, /*setIsGuestMode*/ } = useStore();
 
   const navItems = [
     { to: '/', icon: <Search size={20} />, label: 'Discover' },
@@ -69,7 +69,7 @@ export const Layout: React.FC = () => {
           </button>
         ) : (
           <button
-            onClick={() => setIsGuestMode(false)}
+            /*onClick={() => setIsGuestMode(false)}*/
             className="ml-4 px-4 py-2 text-sm font-bold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors rounded-xl"
             title="Sign In"
           >

@@ -16,7 +16,7 @@ export const Auth: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setIsGuestMode } = useStore();
+  //const { setIsGuestMode } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
