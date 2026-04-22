@@ -120,6 +120,9 @@ exports.generateRecipe = (0, https_1.onCall)({
     }
     catch (error) {
         console.error("Gemini Failure:", error);
+        if (error?.status === 429) {
+            throw new https_1.HttpsError("resource-exhausted", "Your Gemini API credits are depleted or rate limit reached.");
+        }
         throw new https_1.HttpsError("internal", "Failed to generate recipe.");
     }
 });

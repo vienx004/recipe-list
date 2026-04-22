@@ -138,6 +138,11 @@ export const generateRecipe = onCall(
       };
     } catch (error: any) {
       console.error("Gemini Failure:", error);
+      
+      if (error?.status === 429) {
+        throw new HttpsError("resource-exhausted", "Your Gemini API credits are depleted or rate limit reached.");
+      }
+      
       throw new HttpsError("internal", "Failed to generate recipe.");
     }
   }
