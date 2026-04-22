@@ -4,7 +4,6 @@
  * Targets the globally mounted RecipeModal where execution actions thrive.
  */
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { RecipeModal } from '../components/RecipeModal';
@@ -47,17 +46,17 @@ describe('Recipe Action Controls (Favorites & Calendar)', () => {
     // Click Save to Favorites
     const favButton = screen.getByText('Save to Favorites');
     expect(favButton).toBeInTheDocument();
-    
+
     fireEvent.click(favButton);
 
     await waitFor(() => {
-       // Should dispatch an update turning it into a favorite
-       expect(mockUpdateRecipe).toHaveBeenCalledWith({
-           ...fakeRecipe,
-           isFavorite: true // The toggle executes payload change
-       });
-       // Resaturate modal hook manually
-       expect(mockSetSelectedRecipe).toHaveBeenCalled();
+      // Should dispatch an update turning it into a favorite
+      expect(mockUpdateRecipe).toHaveBeenCalledWith({
+        ...fakeRecipe,
+        isFavorite: true // The toggle executes payload change
+      });
+      // Resaturate modal hook manually
+      expect(mockSetSelectedRecipe).toHaveBeenCalled();
     });
   });
 
@@ -66,18 +65,18 @@ describe('Recipe Action Controls (Favorites & Calendar)', () => {
 
     // Find the date input field explicitly mapped under "Cook on"
     const dateInput = screen.getByLabelText('Cook on:');
-    
+
     // Simulate picking May 20th 2026
     fireEvent.change(dateInput, { target: { value: '2026-05-20' } });
 
     await waitFor(() => {
-       // updateRecipe should be slammed heavily with the exact ISO date layout securely formatted!
-       expect(mockUpdateRecipe).toHaveBeenCalledWith(
-          expect.objectContaining({
-             scheduledDate: '2026-05-20T12:00:00.000Z',
-             isFavorite: true // The architecture automatically favorites deliberately scheduled events
-          })
-       );
+      // updateRecipe should be slammed heavily with the exact ISO date layout securely formatted!
+      expect(mockUpdateRecipe).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scheduledDate: '2026-05-20T12:00:00.000Z',
+          isFavorite: true // The architecture automatically favorites deliberately scheduled events
+        })
+      );
     });
   });
 });

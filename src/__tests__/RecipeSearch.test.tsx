@@ -4,7 +4,6 @@
  * Verifies that typing and clicking calls the precise Gemini functions securely.
  */
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { RecipeSearch } from '../components/RecipeSearch';
@@ -48,15 +47,15 @@ describe('RecipeSearch Component', () => {
       instructions: [],
       prepTimeMinutes: 15
     };
-    
+
     (generateRecipe as any).mockResolvedValue(mockGeneratedRecipe);
     mockAddRecipe.mockResolvedValue({ id: '123', ...mockGeneratedRecipe });
 
     render(<RecipeSearch />);
-    
+
     const input = screen.getByPlaceholderText(/Spicy Shrimp Tacos/i);
     fireEvent.change(input, { target: { value: 'Spicy Tacos' } });
-    
+
     const submitBtn = screen.getByRole('button', { name: /Generate/i });
     fireEvent.click(submitBtn);
 
