@@ -12,7 +12,7 @@ import { RecipeModal } from './RecipeModal';
 import { Auth } from './Auth';
 
 export const Layout: React.FC = () => {
-  const { isFirebaseActive, authLoading, user, logout, firebaseError } = useStore();
+  const { isFirebaseActive, authLoading, user, logout, firebaseError, isGuestMode, setIsGuestMode } = useStore();
 
   const navItems = [
     { to: '/', icon: <Search size={20} />, label: 'Discover' },
@@ -29,7 +29,7 @@ export const Layout: React.FC = () => {
     </div>
   );
 
-  if (!user) {
+  if (!user && !isGuestMode) {
     return <Auth />;
   }
 
@@ -42,7 +42,7 @@ export const Layout: React.FC = () => {
             <ChefHat className="text-textPrimary" size={28} />
           </div>
           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-textPrimary to-textSecondary">
-            Recipe List
+            Recipe Planner
           </h1>
         </div>
 
@@ -53,19 +53,29 @@ export const Layout: React.FC = () => {
             {isFirebaseActive ? 'Cloud Sync Active' : 'Local Storage Mode'}
           </span>
           {firebaseError && (
-             <span className="text-[10px] text-red-400 font-medium max-w-[250px] truncate text-right absolute top-9 right-0" title={firebaseError}>
-                Err: {firebaseError}
-             </span>
+            <span className="text-[10px] text-red-400 font-medium max-w-[250px] truncate text-right absolute top-9 right-0" title={firebaseError}>
+              Err: {firebaseError}
+            </span>
           )}
         </div>
-        
-        <button 
-           onClick={() => logout()}
-           className="ml-4 p-2 text-textSecondary hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-full"
-           title="Sign Out"
-        >
-          <LogOut size={18} />
-        </button>
+
+        {user ? (
+          <button
+            onClick={() => logout()}
+            className="ml-4 p-2 text-textSecondary hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-full"
+            title="Sign Out"
+          >
+            <LogOut size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsGuestMode(false)}
+            className="ml-4 px-4 py-2 text-sm font-bold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors rounded-xl"
+            title="Sign In"
+          >
+            Sign In
+          </button>
+        )}
       </header>
 
       {/* Main Layout containing Side Nav and Page Content */}
@@ -117,7 +127,7 @@ export const Layout: React.FC = () => {
           </NavLink>
         ))}
       </nav>
-      
+
       {/* Global Modals */}
       <RecipeModal />
     </div>

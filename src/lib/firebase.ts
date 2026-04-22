@@ -10,6 +10,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 // Your web app's Firebase configuration
 // The USER must provide these in their .env.local file
@@ -30,6 +31,9 @@ export const auth = getAuth(app);
 
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
+
+// Initialize Cloud Functions
+export const functions = getFunctions(app);
 
 // For Offline resilience (optional but great for UX!)
 // enableIndexedDbPersistence(db).catch(err => {
