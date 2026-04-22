@@ -30,12 +30,12 @@ export const generateRecipe = onCall(
         "You must be logged in to generate recipes."
       );
     }
-    
+
     const uid = request.auth.uid;
 
     // 2. Rate Limiting Logic via Firestore
     const rateLimitRef = db.collection("rateLimits").doc(uid);
-    
+
     await db.runTransaction(async (transaction) => {
       const doc = await transaction.get(rateLimitRef);
       const now = Date.now();
@@ -56,10 +56,10 @@ export const generateRecipe = onCall(
         } else {
           // Check if limit exceeded
           if (count >= MAX_REQUESTS_PER_HOUR) {
-             throw new HttpsError(
-               "resource-exhausted",
-               "You have exceeded your recipe generation limit. Please try again later."
-             );
+            throw new HttpsError(
+              "resource-exhausted",
+              "You have exceeded your recipe generation limit. Please try again later."
+            );
           }
           // Increment count
           transaction.update(rateLimitRef, { count: count + 1 });
@@ -70,7 +70,7 @@ export const generateRecipe = onCall(
     // 3. Extract the Query
     const query = request.data.query;
     if (!query || typeof query !== 'string') {
-        throw new HttpsError("invalid-argument", "Query is required.");
+      throw new HttpsError("invalid-argument", "Query is required.");
     }
 
     // 4. Securely Call Gemini
@@ -78,14 +78,14 @@ export const generateRecipe = onCall(
     if (!API_KEY) {
       console.warn("Missing GEMINI_API_KEY environment variable. Returning mock.");
       return {
-          id: uuidv4(),
-          title: "Mock Backend Recipe (API Key Missing)",
-          description: "Please configure GEMINI_API_KEY in Google Cloud Secret Manager.",
-          ingredients: [{ name: "Mock Ingredient", amount: 1, unit: "unit" }],
-          instructions: ["Step 1: Setup secret.", "Step 2: Try again."],
-          isFavorite: false,
-          prepTimeMinutes: 5,
-          imageUrl: "https://images.unsplash.com/photo-1498837167339-444ea46cb1e5?auto=format&fit=crop&q=80&w=1080"
+        id: uuidv4(),
+        title: "Mock Backend Recipe (API Key Missing)",
+        description: "Please configure GEMINI_API_KEY in Google Cloud Secret Manager.",
+        ingredients: [{ name: "Mock Ingredient", amount: 1, unit: "unit" }],
+        instructions: ["Step 1: Setup secret.", "Step 2: Try again."],
+        isFavorite: false,
+        prepTimeMinutes: 5,
+        imageUrl: "https://images.unsplash.com/photo-1498837167339-444ea46cb1e5?auto=format&fit=crop&q=80&w=1080"
       };
     }
 
@@ -122,7 +122,7 @@ export const generateRecipe = onCall(
     try {
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
-      
+
       const cleanedText = responseText.replace(/```(?:json)?\n?/g, "").trim();
       const parsed = JSON.parse(cleanedText);
 
@@ -138,11 +138,6 @@ export const generateRecipe = onCall(
       };
     } catch (error: any) {
       console.error("Gemini Failure:", error);
-      
-      if (error?.status === 429) {
-        throw new HttpsError("resource-exhausted", "Your Gemini API credits are depleted or rate limit reached.");
-      }
-      
       throw new HttpsError("internal", "Failed to generate recipe.");
     }
   }
