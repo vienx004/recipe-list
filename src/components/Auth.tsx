@@ -137,6 +137,7 @@ export const Auth: React.FC = () => {
           Continue with Google
         </button>
 
+        {/*}
         <button
           type="button"
           onClick={() => setIsGuestMode(true)}
@@ -144,7 +145,8 @@ export const Auth: React.FC = () => {
           className="w-full mt-4 bg-transparent border border-secondary/20 hover:bg-secondary/5 transition-colors py-3 rounded-xl flex items-center justify-center gap-3 text-textSecondary font-bold shadow-sm"
         >
           Try it as a Guest (Local Storage)
-        </button>
+        </button> 
+        */}
 
         <div className="mt-6 text-center text-sm font-medium text-textSecondary">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
