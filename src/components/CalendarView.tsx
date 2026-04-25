@@ -6,10 +6,10 @@
  */
 
 import React, { useState } from 'react';
-import { 
-  format, startOfWeek, endOfWeek, eachDayOfInterval, 
-  startOfMonth, endOfMonth, isSameMonth, isSameDay, 
-  addMonths, subMonths, addWeeks, subWeeks, addDays, subDays 
+import {
+  format, startOfWeek, endOfWeek, eachDayOfInterval,
+  startOfMonth, endOfMonth, isSameMonth, isSameDay,
+  addMonths, subMonths, addWeeks, subWeeks, addDays, subDays
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, ChefHat, CalendarDays, Calendar as CalWeek, CalendarRange, Trash2, Plus, Search, Loader2 } from 'lucide-react';
 import { useStore } from '../lib/store';
@@ -20,7 +20,7 @@ type ViewMode = 'month' | 'week' | '3-day';
 export const CalendarView: React.FC = () => {
   const { recipes, updateRecipe, setSelectedRecipe, addRecipe } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [viewMode, setViewMode] = window.matchMedia("(max-width: 768px)").matches ? useState<ViewMode>('3-day') : useState<ViewMode>('month');
 
   const [searchingDate, setSearchingDate] = useState<Date | null>(null);
   const [inlineQuery, setInlineQuery] = useState('');
@@ -50,7 +50,7 @@ export const CalendarView: React.FC = () => {
     if (viewMode === 'week') setCurrentDate(addWeeks(currentDate, 1));
     if (viewMode === '3-day') setCurrentDate(addDays(currentDate, 3));
   };
-  
+
   const handlePrev = () => {
     if (viewMode === 'month') setCurrentDate(subMonths(currentDate, 1));
     if (viewMode === 'week') setCurrentDate(subWeeks(currentDate, 1));
@@ -61,24 +61,24 @@ export const CalendarView: React.FC = () => {
   const getRecipesForDay = (day: Date) => {
     return recipes.filter(r => r.scheduledDate && isSameDay(new Date(r.scheduledDate), day));
   };
-  
+
   const handleInlineSearch = async (e: React.FormEvent, targetDate: Date) => {
     e.preventDefault();
     if (!inlineQuery.trim() || inlineLoading) return;
-    
+
     setInlineLoading(true);
     try {
       const q = inlineQuery.toLowerCase().trim();
       const existing = recipes.find(r => r.title.toLowerCase().includes(q));
-      
+
       let recipeToSchedule;
       if (existing) {
         recipeToSchedule = existing;
       } else {
-         const generated = await generateRecipe(inlineQuery);
-         recipeToSchedule = await addRecipe(generated);
+        const generated = await generateRecipe(inlineQuery);
+        recipeToSchedule = await addRecipe(generated);
       }
-      
+
       await updateRecipe({ ...recipeToSchedule, scheduledDate: targetDate.toISOString() });
       setSearchingDate(null);
       setInlineQuery('');
@@ -103,26 +103,26 @@ export const CalendarView: React.FC = () => {
           <h2 className="text-3xl font-bold text-textPrimary mb-1">Meal Calendar</h2>
           <p className="text-textSecondary">Plan your meals on your exact timeline.</p>
         </div>
-        
+
         {/* Toggle Controls */}
         <div className="glass-panel p-1.5 rounded-xl flex gap-1 bg-surface border border-secondary/20 shadow-sm w-full md:w-auto overflow-x-auto justify-center">
-          <button 
-            onClick={() => setViewMode('month')} 
+          <button
+            onClick={() => setViewMode('month')}
             className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-all ${viewMode === 'month' ? 'bg-secondary text-white shadow-md' : 'text-textSecondary hover:text-textPrimary hover:bg-black/5'}`}
           >
-            <CalendarDays size={16}/> Month
+            <CalendarDays size={16} /> Month
           </button>
-          <button 
-            onClick={() => setViewMode('week')} 
+          <button
+            onClick={() => setViewMode('week')}
             className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-all ${viewMode === 'week' ? 'bg-secondary text-white shadow-md' : 'text-textSecondary hover:text-textPrimary hover:bg-black/5'}`}
           >
-            <CalWeek size={16}/> Week
+            <CalWeek size={16} /> Week
           </button>
-          <button 
-            onClick={() => setViewMode('3-day')} 
+          <button
+            onClick={() => setViewMode('3-day')}
             className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-all ${viewMode === '3-day' ? 'bg-secondary text-white shadow-md' : 'text-textSecondary hover:text-textPrimary hover:bg-black/5'}`}
           >
-            <CalendarRange size={16}/> 3-Day
+            <CalendarRange size={16} /> 3-Day
           </button>
         </div>
 
@@ -131,8 +131,8 @@ export const CalendarView: React.FC = () => {
             <ChevronLeft size={20} className="text-textSecondary hover:text-textPrimary" />
           </button>
           <span className="text-lg font-bold min-w-[150px] text-center text-textPrimary">
-            {viewMode === 'month' 
-              ? format(currentDate, 'MMMM yyyy') 
+            {viewMode === 'month'
+              ? format(currentDate, 'MMMM yyyy')
               : `${format(calendarDays[0], 'MMM d')} - ${format(calendarDays[calendarDays.length - 1], 'MMM d')}`
             }
           </span>
@@ -159,7 +159,7 @@ export const CalendarView: React.FC = () => {
             const dayRecipes = getRecipesForDay(day);
             const isToday = isSameDay(day, new Date());
             const isCurrentMonth = isSameMonth(day, currentDate);
-            
+
             // Render non-current month days heavily faded
             const opacityClass = (isCurrentMonth || viewMode !== 'month') ? 'bg-surface' : 'bg-background/40 opacity-70';
 
@@ -206,7 +206,7 @@ export const CalendarView: React.FC = () => {
                         <ChefHat size={14} className="shrink-0 text-accent" />
                         <span className="truncate whitespace-normal leading-tight font-medium">{r.title}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           updateRecipe({ ...r, scheduledDate: undefined });
@@ -225,8 +225,8 @@ export const CalendarView: React.FC = () => {
                     <form onSubmit={(e) => handleInlineSearch(e, day)} className="bg-surface p-3 rounded-2xl shadow-2xl shadow-black/10 border border-secondary/30 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 zoom-in-95 duration-200">
                       <div className="flex justify-between items-center px-1">
                         <span className="text-xs font-bold text-secondary">Schedule for {format(day, 'MMM d')}</span>
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={(e) => {
                             e.preventDefault();
                             setSearchingDate(null);
@@ -234,18 +234,18 @@ export const CalendarView: React.FC = () => {
                           className="text-textSecondary hover:text-red-500 rounded-full p-1 hover:bg-red-500/10 transition-colors"
                           title="Cancel"
                         >
-                          <Trash2 size={12} className="opacity-0 w-0 h-0 absolute hidden"/> 
+                          <Trash2 size={12} className="opacity-0 w-0 h-0 absolute hidden" />
                           {/* using an X icon would be functionally ideal but for simplicity we can use text or just close it */}
                           <span className="text-[10px] font-bold uppercase tracking-wider">Close</span>
                         </button>
                       </div>
                       <div className="relative w-full">
-                        <input 
+                        <input
                           autoFocus
-                          type="text" 
+                          type="text"
                           value={inlineQuery}
                           onChange={(e) => setInlineQuery(e.target.value)}
-                          placeholder="Search or ask AI..." 
+                          placeholder="Search or ask AI..."
                           className="w-full text-sm p-2.5 pr-9 rounded-xl border border-secondary/20 bg-background focus:outline-none focus:border-secondary transition-colors"
                         />
                         <button type="submit" disabled={inlineLoading} className="absolute right-2.5 top-2.5 text-secondary hover:text-accent disabled:opacity-50 transition-colors">
@@ -257,7 +257,7 @@ export const CalendarView: React.FC = () => {
                 )}
 
                 {(!searchingDate || !isSameDay(searchingDate, day)) && (
-                  <button 
+                  <button
                     onClick={() => { setSearchingDate(day); setInlineQuery(''); }}
                     className="mt-auto opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 w-[90%] mx-auto bg-secondary/10 hover:bg-secondary/20 text-secondary rounded py-1.5 transition-all text-xs font-semibold"
                     title="Add recipe"
