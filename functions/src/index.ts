@@ -13,7 +13,7 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // Rate Limit Configuration
-const MAX_REQUESTS_PER_HOUR = 5;
+const MAX_REQUESTS_PER_HOUR = 20;
 
 export const generateRecipe = onCall(
   {

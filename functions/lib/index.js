@@ -13,7 +13,7 @@ const uuid_1 = require("uuid");
 admin.initializeApp();
 const db = admin.firestore();
 // Rate Limit Configuration
-const MAX_REQUESTS_PER_HOUR = 5;
+const MAX_REQUESTS_PER_HOUR = 20;
 exports.generateRecipe = (0, https_1.onCall)({
     // You can enforce App Check to ensure only your authorized frontend app can call this function
     // enforceAppCheck: true, 
