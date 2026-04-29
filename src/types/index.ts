@@ -36,8 +36,8 @@ export interface Recipe {
   instructions: string[];
   /** Indicates if the user has marked this recipe as a favorite */
   isFavorite: boolean;
-  /** Optional date ISO string representing when this recipe is planned in the calendar */
-  scheduledDate?: string;
+  /** Optional array of date ISO strings representing when this recipe is planned in the calendar */
+  scheduledDates?: string[];
   /** Image URL for visual flair, could be an external placeholder or Gemini provided flavor */
   imageUrl?: string;
   /** Estimated time to cook inside minutes */

@@ -59,7 +59,7 @@ export const CalendarView: React.FC = () => {
 
   // Determine recipes scheduled on a specific day
   const getRecipesForDay = (day: Date) => {
-    return recipes.filter(r => r.scheduledDate && isSameDay(new Date(r.scheduledDate), day));
+    return recipes.filter(r => r.scheduledDates?.some(d => isSameDay(new Date(d), day)));
   };
 
   const handleInlineSearch = async (e: React.FormEvent, targetDate: Date) => {
@@ -79,7 +79,7 @@ export const CalendarView: React.FC = () => {
         recipeToSchedule = await addRecipe(generated);
       }
 
-      await updateRecipe({ ...recipeToSchedule, scheduledDate: targetDate.toISOString() });
+      await updateRecipe({ ...recipeToSchedule, scheduledDates: [...(recipeToSchedule.scheduledDates || []), targetDate.toISOString()] });
       setSearchingDate(null);
       setInlineQuery('');
     } catch (err) {
@@ -169,10 +169,39 @@ export const CalendarView: React.FC = () => {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
-                  const recipeId = e.dataTransfer.getData('text/plain');
-                  const recipe = recipes.find(r => r.id === recipeId);
-                  if (recipe) {
-                    updateRecipe({ ...recipe, scheduledDate: day.toISOString() });
+                  try {
+                    const data = e.dataTransfer.getData('text/plain');
+                    if (!data) return;
+                    
+                    let recipeId = data;
+                    let sourceDate: string | null = null;
+                    
+                    try {
+                      const parsed = JSON.parse(data);
+                      recipeId = parsed.id;
+                      sourceDate = parsed.sourceDate;
+                    } catch (err) {
+                      // fallback to raw ID if not JSON
+                    }
+
+                    const recipe = recipes.find(r => r.id === recipeId);
+                    if (recipe) {
+                      let newDates = recipe.scheduledDates || [];
+                      // Remove from source date if it exists
+                      if (sourceDate) {
+                        newDates = newDates.filter(d => !isSameDay(new Date(d), new Date(sourceDate!)));
+                      }
+                      
+                      // Add to new date if not already there
+                      const targetDateStr = day.toISOString();
+                      if (!newDates.some(d => isSameDay(new Date(d), day))) {
+                         newDates.push(targetDateStr);
+                      }
+                      
+                      updateRecipe({ ...recipe, scheduledDates: newDates });
+                    }
+                  } catch (err) {
+                    console.error("Drop error", err);
                   }
                 }}
                 className={`min-h-[140px] flex flex-col p-3 border-b border-r border-secondary/20 transition-colors group relative
@@ -194,7 +223,7 @@ export const CalendarView: React.FC = () => {
                     <div
                       key={r.id}
                       draggable
-                      onDragStart={(e) => e.dataTransfer.setData('text/plain', r.id)}
+                      onDragStart={(e) => e.dataTransfer.setData('text/plain', JSON.stringify({ id: r.id, sourceDate: day.toISOString() }))}
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedRecipe(r);
@@ -209,7 +238,8 @@ export const CalendarView: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateRecipe({ ...r, scheduledDate: undefined });
+                          const newDates = (r.scheduledDates || []).filter(d => !isSameDay(new Date(d), day));
+                          updateRecipe({ ...r, scheduledDates: newDates });
                         }}
                         className="text-textSecondary hover:text-red-500 opacity-0 group-hover/pill:opacity-100 transition-opacity p-0.5 rounded-md hover:bg-red-500/10 shrink-0"
                         title="Remove from calendar"

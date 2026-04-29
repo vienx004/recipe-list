@@ -22,6 +22,10 @@ interface StoreContextType {
   inStockItems: string[];
   addInStockItem: (name: string) => void;
   removeInStockItem: (name: string) => void;
+  customGroceryItems: { id: string; name: string; isCompleted: boolean }[];
+  addCustomGroceryItem: (name: string) => void;
+  removeCustomGroceryItem: (id: string) => void;
+  toggleCustomGroceryItem: (id: string) => void;
   selectedRecipe: Recipe | null;
   setSelectedRecipe: (recipe: Recipe | null) => void;
   firebaseError: string | null;
@@ -47,6 +51,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isGuestMode, setIsGuestMode] = useState(false);
 
   const [inStockItems, setInStockItems] = useState<string[]>([]);
+  const [customGroceryItems, setCustomGroceryItems] = useState<{ id: string; name: string; isCompleted: boolean }[]>([]);
 
   // Monitor Authentication Pipeline globally
   useEffect(() => {
@@ -91,6 +96,43 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveLocalInStock(updated);
   };
 
+  const saveLocalCustomItems = (items: { id: string; name: string; isCompleted: boolean }[]) => {
+    localStorage.setItem('local_custom_grocery', JSON.stringify(items));
+    setCustomGroceryItems(items);
+  };
+
+  const addCustomGroceryItem = async (name: string) => {
+    if (!name.trim()) return;
+    const newItem = { id: uuidv4(), name: name.trim(), isCompleted: false };
+    const updated = [...customGroceryItems, newItem];
+    if (user && isFirebaseActive) {
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { customGroceryItems: updated }, { merge: true });
+      } catch (err) { console.error("Firebase settings save failed", err); }
+    }
+    saveLocalCustomItems(updated);
+  };
+
+  const removeCustomGroceryItem = async (id: string) => {
+    const updated = customGroceryItems.filter(i => i.id !== id);
+    if (user && isFirebaseActive) {
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { customGroceryItems: updated }, { merge: true });
+      } catch (err) { }
+    }
+    saveLocalCustomItems(updated);
+  };
+
+  const toggleCustomGroceryItem = async (id: string) => {
+    const updated = customGroceryItems.map(i => i.id === id ? { ...i, isCompleted: !i.isCompleted } : i);
+    if (user && isFirebaseActive) {
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { customGroceryItems: updated }, { merge: true });
+      } catch (err) { }
+    }
+    saveLocalCustomItems(updated);
+  };
+
   const getLocalRecipes = (): Recipe[] => {
     const raw = localStorage.getItem('local_recipes');
     return raw ? JSON.parse(raw) : [];
@@ -111,6 +153,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setRecipes(getLocalRecipes());
       const raw = localStorage.getItem('local_instock');
       setInStockItems(raw ? JSON.parse(raw) : []);
+      const rawCustom = localStorage.getItem('local_custom_grocery');
+      setCustomGroceryItems(rawCustom ? JSON.parse(rawCustom) : []);
       return;
     }
 
@@ -139,11 +183,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       // Listen to scoped user inventory
       const unsubSettings = onSnapshot(doc(db, "userSettings", user.uid), (docSnap) => {
-        if (docSnap.exists() && docSnap.data().inStockItems) {
-          setInStockItems(docSnap.data().inStockItems);
-          localStorage.setItem('local_instock', JSON.stringify(docSnap.data().inStockItems));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.inStockItems) {
+            setInStockItems(data.inStockItems);
+            localStorage.setItem('local_instock', JSON.stringify(data.inStockItems));
+          }
+          if (data.customGroceryItems) {
+            setCustomGroceryItems(data.customGroceryItems);
+            localStorage.setItem('local_custom_grocery', JSON.stringify(data.customGroceryItems));
+          }
         } else {
           setInStockItems([]);
+          setCustomGroceryItems([]);
         }
       }, (error) => {
         console.warn("Failed fetching settings", error.message);
@@ -224,6 +276,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider value={{
       recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
       inStockItems, addInStockItem, removeInStockItem,
+      customGroceryItems, addCustomGroceryItem, removeCustomGroceryItem, toggleCustomGroceryItem,
       selectedRecipe, setSelectedRecipe, firebaseError,
       user, authLoading, logout,
       isGuestMode, setIsGuestMode

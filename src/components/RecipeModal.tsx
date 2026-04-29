@@ -309,24 +309,32 @@ export const RecipeModal: React.FC = () => {
                 )}
               </button>
 
-              <div className="flex items-center justify-center gap-3 bg-background p-3 rounded-xl border border-secondary/20 min-w-[220px]">
-                <CalendarDays className="text-secondary shrink-0" size={20} />
-                <label htmlFor="schedule-date" className="text-sm font-semibold text-textPrimary shrink-0">
-                  Cook on:
-                </label>
-                <input
-                  id="schedule-date"
-                  type="date"
-                  value={selectedRecipe.scheduledDate ? selectedRecipe.scheduledDate.split('T')[0] : ''}
-                  onChange={async (e) => {
-                    const val = e.target.value;
-                    const newDate = val ? new Date(`${val}T12:00:00Z`).toISOString() : undefined;
-                    const updated = { ...selectedRecipe, scheduledDate: newDate, isFavorite: true };
-                    await updateRecipe(updated);
-                    setSelectedRecipe(updated);
-                  }}
-                  className="input-field !py-1.5 !px-3 text-sm flex-1 cursor-pointer hover:border-accent"
-                />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-center gap-3 bg-background p-3 rounded-xl border border-secondary/20 min-w-[220px]">
+                  <CalendarDays className="text-secondary shrink-0" size={20} />
+                  <label htmlFor="schedule-date" className="text-sm font-semibold text-textPrimary shrink-0">
+                    Add to Date:
+                  </label>
+                  <input
+                    id="schedule-date"
+                    type="date"
+                    value={''}
+                    onChange={async (e) => {
+                      const val = e.target.value;
+                      if (!val) return;
+                      const newDate = new Date(`${val}T12:00:00Z`).toISOString();
+                      const existingDates = selectedRecipe.scheduledDates || [];
+                      
+                      // Only add if not already scheduled for this exact date
+                      if (!existingDates.includes(newDate)) {
+                        const updated = { ...selectedRecipe, scheduledDates: [...existingDates, newDate], isFavorite: true };
+                        await updateRecipe(updated);
+                        setSelectedRecipe(updated);
+                      }
+                    }}
+                    className="input-field !py-1.5 !px-3 text-sm flex-1 cursor-pointer hover:border-accent"
+                  />
+                </div>
               </div>
             </>
           )}

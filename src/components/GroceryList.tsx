@@ -4,11 +4,12 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { ShoppingCart, CheckSquare, Square } from 'lucide-react';
+import { ShoppingCart, CheckSquare, Square, Plus, Trash2 } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const GroceryList: React.FC = () => {
-  const { recipes, inStockItems } = useStore();
+  const { recipes, inStockItems, customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem, removeCustomGroceryItem } = useStore();
+  const [customInput, setCustomInput] = useState('');
 
   // Tracks explicit toggles, overriding Pantry defaults.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
@@ -24,16 +25,19 @@ export const GroceryList: React.FC = () => {
   const aggregatedIngredients = useMemo(() => {
     const map = new Map<string, { amount: number, unit: string }>();
 
-    const scheduledRecipes = recipes.filter(r => r.scheduledDate);
+    const scheduledRecipes = recipes.filter(r => r.scheduledDates && r.scheduledDates.length > 0);
 
     scheduledRecipes.forEach(recipe => {
+      const timesScheduled = recipe.scheduledDates!.length;
       recipe.ingredients.forEach(ing => {
         const key = `${ing.name.toLowerCase()}|${ing.unit.toLowerCase()}`;
+        const addedAmount = ing.amount * timesScheduled;
+        
         if (map.has(key)) {
           const existing = map.get(key)!;
-          map.set(key, { amount: existing.amount + ing.amount, unit: existing.unit });
+          map.set(key, { amount: existing.amount + addedAmount, unit: existing.unit });
         } else {
-          map.set(key, { amount: ing.amount, unit: ing.unit });
+          map.set(key, { amount: addedAmount, unit: ing.unit });
         }
       });
     });
@@ -65,12 +69,20 @@ export const GroceryList: React.FC = () => {
       if (isChecked) {
         completed.push(item);
       } else {
-        active.push(item);
+        active.push({ ...item, isCustom: false });
+      }
+    });
+
+    customGroceryItems.forEach(item => {
+      if (item.isCompleted) {
+        completed.push({ name: item.name, amount: 0, unit: '', isCustom: true, id: item.id });
+      } else {
+        active.push({ name: item.name, amount: 0, unit: '', isCustom: true, id: item.id });
       }
     });
 
     return { active, completed };
-  }, [aggregatedIngredients, inStockItems, overrides]);
+  }, [aggregatedIngredients, inStockItems, overrides, customGroceryItems]);
 
   if (aggregatedIngredients.length === 0) {
     return (
@@ -84,11 +96,31 @@ export const GroceryList: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-12">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-textPrimary mb-2">Grocery List</h2>
           <p className="text-textSecondary">Everything you need for your planned meals.</p>
         </div>
+        
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            addCustomGroceryItem(customInput);
+            setCustomInput('');
+          }}
+          className="flex items-center gap-2 w-full md:w-auto"
+        >
+          <input
+            type="text"
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            placeholder="Add custom item..."
+            className="input-field !py-2 !px-4 flex-1 md:w-64"
+          />
+          <button type="submit" className="btn-primary !p-2 rounded-xl" disabled={!customInput.trim()}>
+            <Plus size={20} />
+          </button>
+        </form>
       </div>
 
       <div className="flex flex-col gap-8">
@@ -97,22 +129,36 @@ export const GroceryList: React.FC = () => {
           <div className="glass-panel p-6 rounded-2xl">
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {categorizedItems.active.map((item, idx) => {
-                const itemId = `${item.name}-${item.unit}`;
+                const itemId = item.isCustom ? item.id : `${item.name}-${item.unit}`;
                 return (
                   <li
                     key={`active-${idx}`}
-                    onClick={() => toggleItem(itemId, false)}
-                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-surface/50 border border-transparent hover:border-secondary/20 transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-4 rounded-xl hover:bg-surface/50 border border-transparent hover:border-secondary/20 transition-all group"
                   >
-                    <div className="transition-colors text-textSecondary group-hover:text-secondary">
-                      <Square size={24} />
+                    <div 
+                      className="flex items-center gap-4 cursor-pointer flex-1"
+                      onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, false)}
+                    >
+                      <div className="transition-colors text-textSecondary group-hover:text-secondary">
+                        <Square size={24} />
+                      </div>
+                      <div className="transition-all duration-300">
+                        <p className="text-lg font-medium text-textPrimary capitalize">{item.name}</p>
+                        {!item.isCustom && (
+                          <p className="text-sm text-textSecondary">
+                            {item.amount.toFixed(Math.max(0, (item.amount.toString().split('.')[1] || '').length))} {item.unit}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="transition-all duration-300">
-                      <p className="text-lg font-medium text-textPrimary capitalize">{item.name}</p>
-                      <p className="text-sm text-textSecondary">
-                        {item.amount.toFixed(Math.max(0, (item.amount.toString().split('.')[1] || '').length))} {item.unit}
-                      </p>
-                    </div>
+                    {item.isCustom && (
+                      <button 
+                        onClick={() => removeCustomGroceryItem(item.id)}
+                        className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </li>
                 );
               })}
@@ -127,22 +173,36 @@ export const GroceryList: React.FC = () => {
             <div className="glass-panel p-6 rounded-2xl opacity-70 hover:opacity-100 transition-opacity">
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {categorizedItems.completed.map((item, idx) => {
-                  const itemId = `${item.name}-${item.unit}`;
+                  const itemId = item.isCustom ? item.id : `${item.name}-${item.unit}`;
                   return (
                     <li
                       key={`completed-${idx}`}
-                      onClick={() => toggleItem(itemId, true)}
-                      className="flex items-center gap-4 p-4 rounded-xl hover:bg-surface/50 border border-secondary/20 bg-surface/30 transition-all cursor-pointer group"
+                      className="flex items-center justify-between p-4 rounded-xl hover:bg-surface/50 border border-secondary/20 bg-surface/30 transition-all group"
                     >
-                      <div className="transition-colors text-secondary group-hover:text-textPrimary">
-                        <CheckSquare size={24} />
+                      <div 
+                        className="flex items-center gap-4 cursor-pointer flex-1"
+                        onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, true)}
+                      >
+                        <div className="transition-colors text-secondary group-hover:text-textPrimary">
+                          <CheckSquare size={24} />
+                        </div>
+                        <div className="transition-all duration-300 line-through text-textSecondary">
+                          <p className="text-lg font-medium text-textPrimary capitalize">{item.name}</p>
+                          {!item.isCustom && (
+                            <p className="text-sm text-textSecondary">
+                              {item.amount.toFixed(Math.max(0, (item.amount.toString().split('.')[1] || '').length))} {item.unit}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="transition-all duration-300 line-through text-textSecondary">
-                        <p className="text-lg font-medium text-textPrimary capitalize">{item.name}</p>
-                        <p className="text-sm text-textSecondary">
-                          {item.amount.toFixed(Math.max(0, (item.amount.toString().split('.')[1] || '').length))} {item.unit}
-                        </p>
-                      </div>
+                      {item.isCustom && (
+                        <button 
+                          onClick={() => removeCustomGroceryItem(item.id)}
+                          className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </li>
                   );
                 })}

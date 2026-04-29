@@ -26,7 +26,7 @@ export const RecipeSearch: React.FC = () => {
     try {
       const q = query.toLowerCase().trim();
       const existing = recipes.find(r => r.isFavorite && r.title.toLowerCase().includes(q));
-      
+
       if (existing) {
         setGeneratedRecipe(existing);
       } else {
@@ -150,22 +150,26 @@ export const RecipeSearch: React.FC = () => {
                   </>
                 )}
               </button>
-              
+
               {/* Calendar Scheduler */}
               <div className="flex items-center gap-3 bg-secondary/5 p-3 rounded-xl border border-secondary/20 flex-1">
                 <CalendarDays className="text-secondary shrink-0" size={20} />
                 <label className="text-sm font-semibold text-textPrimary shrink-0">
                   Cook on:
                 </label>
-                <input 
+                <input
                   type="date"
-                  value={generatedRecipe.scheduledDate ? generatedRecipe.scheduledDate.split('T')[0] : ''}
+                  value={''}
                   onChange={async (e) => {
                     const val = e.target.value;
-                    const newDate = val ? new Date(`${val}T12:00:00Z`).toISOString() : undefined;
-                    const updated = { ...generatedRecipe, scheduledDate: newDate, isFavorite: true };
-                    await updateRecipe(updated);
-                    setGeneratedRecipe(updated);
+                    if (!val) return;
+                    const newDate = new Date(`${val}T12:00:00Z`).toISOString();
+                    const existingDates = generatedRecipe.scheduledDates || [];
+                    if (!existingDates.includes(newDate)) {
+                      const updated = { ...generatedRecipe, scheduledDates: [...existingDates, newDate], isFavorite: true };
+                      await updateRecipe(updated);
+                      setGeneratedRecipe(updated);
+                    }
                   }}
                   className="input-field !py-1.5 !px-3 text-sm flex-1 cursor-pointer hover:border-accent"
                 />
