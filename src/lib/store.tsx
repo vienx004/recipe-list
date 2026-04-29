@@ -31,7 +31,7 @@ interface StoreContextType {
   authLoading: boolean;
   logout: () => void;
   isGuestMode: boolean;
-  //setIsGuestMode: (val: boolean) => void;
+  setIsGuestMode: (val: boolean) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -44,7 +44,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  //const [isGuestMode, setIsGuestMode] = useState(false);
+  const [isGuestMode, setIsGuestMode] = useState(false);
 
   const [inStockItems, setInStockItems] = useState<string[]>([]);
 
@@ -216,7 +216,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (err) {
       console.error(err);
     } finally {
-      //setIsGuestMode(false);
+      setIsGuestMode(false);
     }
   };
 
@@ -226,7 +226,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       inStockItems, addInStockItem, removeInStockItem,
       selectedRecipe, setSelectedRecipe, firebaseError,
       user, authLoading, logout,
-      isGuestMode: false
+      isGuestMode, setIsGuestMode
     }}>
       {children}
     </StoreContext.Provider>

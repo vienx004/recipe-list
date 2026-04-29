@@ -23,15 +23,10 @@ export const generateRecipe = onCall(
     secrets: ["GEMINI_API_KEY"] // Ensure API Key is passed securely
   },
   async (request) => {
-    // 1. Authenticate Request
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "You must be logged in to generate recipes."
-      );
-    }
-
-    const uid = request.auth.uid;
+    // 1. Authenticate Request (Allow guests by falling back to IP)
+    const ip = request.rawRequest.ip || "unknown-ip";
+    const cleanIp = ip.replace(/\//g, '_');
+    const uid = request.auth ? request.auth.uid : `guest_${cleanIp}`;
 
     // 2. Rate Limiting Logic via Firestore
     const rateLimitRef = db.collection("rateLimits").doc(uid);

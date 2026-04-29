@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { ChefHat, Loader2, Mail, Lock } from 'lucide-react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-//import { useStore } from '../lib/store';
+import { useStore } from '../lib/store';
 
 export const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +16,7 @@ export const Auth: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  //const { setIsGuestMode } = useStore();
+  const { setIsGuestMode } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,16 +137,16 @@ export const Auth: React.FC = () => {
           Continue with Google
         </button>
 
-        {/*}
-        <button
-          type="button"
-          onClick={() => setIsGuestMode(true)}
-          disabled={loading}
-          className="w-full mt-4 bg-transparent border border-secondary/20 hover:bg-secondary/5 transition-colors py-3 rounded-xl flex items-center justify-center gap-3 text-textSecondary font-bold shadow-sm"
-        >
-          Try it as a Guest (Local Storage)
-        </button> 
-        */}
+        {
+          <button
+            type="button"
+            onClick={() => setIsGuestMode(true)}
+            disabled={loading}
+            className="w-full mt-4 bg-transparent border border-secondary/20 hover:bg-secondary/5 transition-colors py-3 rounded-xl flex items-center justify-center gap-3 text-textSecondary font-bold shadow-sm"
+          >
+            Try it as a Guest (Local Storage)
+          </button>
+        }
 
         <div className="mt-6 text-center text-sm font-medium text-textSecondary">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
