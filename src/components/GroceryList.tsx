@@ -8,18 +8,8 @@ import { ShoppingCart, CheckSquare, Square, Plus } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const GroceryList: React.FC = () => {
-  const { recipes, inStockItems, customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem } = useStore();
+  const { recipes, inStockItems, customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem, groceryOverrides, toggleGroceryOverride } = useStore();
   const [customInput, setCustomInput] = useState('');
-
-  // Tracks explicit toggles, overriding Pantry defaults.
-  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
-
-  const toggleItem = (itemId: string, currentlyChecked: boolean) => {
-    setOverrides(prev => ({
-      ...prev,
-      [itemId]: !currentlyChecked
-    }));
-  };
 
   // Aggregate ingredients smartly based on exact name match. 
   const aggregatedIngredients = useMemo(() => {
@@ -63,8 +53,8 @@ export const GroceryList: React.FC = () => {
       const isPantry = inStockItems.some(stock => item.name.toLowerCase() === stock || item.name.toLowerCase().includes(stock));
 
       let isChecked = isPantry;
-      if (overrides[itemId] !== undefined) {
-        isChecked = overrides[itemId];
+      if (groceryOverrides[itemId] !== undefined) {
+        isChecked = groceryOverrides[itemId];
       }
 
       if (isChecked) {
@@ -83,7 +73,7 @@ export const GroceryList: React.FC = () => {
     });
 
     return { active, completed };
-  }, [aggregatedIngredients, inStockItems, overrides, customGroceryItems]);
+  }, [aggregatedIngredients, inStockItems, groceryOverrides, customGroceryItems]);
 
   if (aggregatedIngredients.length === 0) {
     return (
@@ -138,7 +128,7 @@ export const GroceryList: React.FC = () => {
                   >
                     <div
                       className="flex items-center gap-4 cursor-pointer flex-1"
-                      onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleItem(itemId!, false)}
+                      onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleGroceryOverride(itemId!, false)}
                     >
                       <div className="transition-colors text-textSecondary group-hover:text-secondary">
                         <Square size={24} />
@@ -174,7 +164,7 @@ export const GroceryList: React.FC = () => {
                     >
                       <div
                         className="flex items-center gap-4 cursor-pointer flex-1"
-                        onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleItem(itemId!, true)}
+                        onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleGroceryOverride(itemId!, true)}
                       >
                         <div className="transition-colors text-secondary group-hover:text-textPrimary">
                           <CheckSquare size={24} />

@@ -25,6 +25,8 @@ interface StoreContextType {
   customGroceryItems: { id: string; name: string; isCompleted: boolean }[];
   addCustomGroceryItem: (name: string) => void;
   toggleCustomGroceryItem: (id: string) => void;
+  groceryOverrides: Record<string, boolean>;
+  toggleGroceryOverride: (itemId: string, currentlyChecked: boolean) => void;
   selectedRecipe: Recipe | null;
   setSelectedRecipe: (recipe: Recipe | null) => void;
   firebaseError: string | null;
@@ -51,6 +53,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [inStockItems, setInStockItems] = useState<string[]>([]);
   const [customGroceryItems, setCustomGroceryItems] = useState<{ id: string; name: string; isCompleted: boolean }[]>([]);
+  const [groceryOverrides, setGroceryOverrides] = useState<Record<string, boolean>>({});
 
   // Monitor Authentication Pipeline globally
   useEffect(() => {
@@ -122,6 +125,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveLocalCustomItems(updated);
   };
 
+  const saveLocalOverrides = (overrides: Record<string, boolean>) => {
+    localStorage.setItem('local_grocery_overrides', JSON.stringify(overrides));
+    setGroceryOverrides(overrides);
+  };
+
+  const toggleGroceryOverride = async (itemId: string, currentlyChecked: boolean) => {
+    const updated = { ...groceryOverrides, [itemId]: !currentlyChecked };
+    if (user && isFirebaseActive) {
+      try {
+        await setDoc(doc(db, "userSettings", user.uid), { groceryOverrides: updated }, { merge: true });
+      } catch (err) { }
+    }
+    saveLocalOverrides(updated);
+  };
+
   const getLocalRecipes = (): Recipe[] => {
     const raw = localStorage.getItem('local_recipes');
     return raw ? JSON.parse(raw) : [];
@@ -144,6 +162,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setInStockItems(raw ? JSON.parse(raw) : []);
       const rawCustom = localStorage.getItem('local_custom_grocery');
       setCustomGroceryItems(rawCustom ? JSON.parse(rawCustom) : []);
+      const rawOverrides = localStorage.getItem('local_grocery_overrides');
+      setGroceryOverrides(rawOverrides ? JSON.parse(rawOverrides) : {});
       return;
     }
 
@@ -182,9 +202,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setCustomGroceryItems(data.customGroceryItems);
             localStorage.setItem('local_custom_grocery', JSON.stringify(data.customGroceryItems));
           }
+          if (data.groceryOverrides) {
+            setGroceryOverrides(data.groceryOverrides);
+            localStorage.setItem('local_grocery_overrides', JSON.stringify(data.groceryOverrides));
+          }
         } else {
           setInStockItems([]);
           setCustomGroceryItems([]);
+          setGroceryOverrides({});
         }
       }, (error) => {
         console.warn("Failed fetching settings", error.message);
@@ -266,6 +291,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
       inStockItems, addInStockItem, removeInStockItem,
       customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem,
+      groceryOverrides, toggleGroceryOverride,
       selectedRecipe, setSelectedRecipe, firebaseError,
       user, authLoading, logout,
       isGuestMode, setIsGuestMode
