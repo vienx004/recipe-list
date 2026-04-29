@@ -32,7 +32,7 @@ export const GroceryList: React.FC = () => {
       recipe.ingredients.forEach(ing => {
         const key = `${ing.name.toLowerCase()}|${ing.unit.toLowerCase()}`;
         const addedAmount = ing.amount * timesScheduled;
-        
+
         if (map.has(key)) {
           const existing = map.get(key)!;
           map.set(key, { amount: existing.amount + addedAmount, unit: existing.unit });
@@ -54,8 +54,9 @@ export const GroceryList: React.FC = () => {
 
   // Split items into active and completed (crossed out) groups
   const categorizedItems = useMemo(() => {
-    const active: typeof aggregatedIngredients = [];
-    const completed: typeof aggregatedIngredients = [];
+    type GroceryListItem = { name: string; amount: number; unit: string; isCustom?: boolean; id?: string };
+    const active: GroceryListItem[] = [];
+    const completed: GroceryListItem[] = [];
 
     aggregatedIngredients.forEach(item => {
       const itemId = `${item.name}-${item.unit}`;
@@ -101,8 +102,8 @@ export const GroceryList: React.FC = () => {
           <h2 className="text-3xl font-bold text-textPrimary mb-2">Grocery List</h2>
           <p className="text-textSecondary">Everything you need for your planned meals.</p>
         </div>
-        
-        <form 
+
+        <form
           onSubmit={(e) => {
             e.preventDefault();
             addCustomGroceryItem(customInput);
@@ -135,7 +136,7 @@ export const GroceryList: React.FC = () => {
                     key={`active-${idx}`}
                     className="flex items-center justify-between p-4 rounded-xl hover:bg-surface/50 border border-transparent hover:border-secondary/20 transition-all group"
                   >
-                    <div 
+                    <div
                       className="flex items-center gap-4 cursor-pointer flex-1"
                       onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, false)}
                     >
@@ -152,7 +153,7 @@ export const GroceryList: React.FC = () => {
                       </div>
                     </div>
                     {item.isCustom && (
-                      <button 
+                      <button
                         onClick={() => removeCustomGroceryItem(item.id)}
                         className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
                       >
@@ -179,7 +180,7 @@ export const GroceryList: React.FC = () => {
                       key={`completed-${idx}`}
                       className="flex items-center justify-between p-4 rounded-xl hover:bg-surface/50 border border-secondary/20 bg-surface/30 transition-all group"
                     >
-                      <div 
+                      <div
                         className="flex items-center gap-4 cursor-pointer flex-1"
                         onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, true)}
                       >
@@ -196,7 +197,7 @@ export const GroceryList: React.FC = () => {
                         </div>
                       </div>
                       {item.isCustom && (
-                        <button 
+                        <button
                           onClick={() => removeCustomGroceryItem(item.id)}
                           className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
                         >
