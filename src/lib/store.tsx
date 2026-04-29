@@ -24,7 +24,6 @@ interface StoreContextType {
   removeInStockItem: (name: string) => void;
   customGroceryItems: { id: string; name: string; isCompleted: boolean }[];
   addCustomGroceryItem: (name: string) => void;
-  removeCustomGroceryItem: (id: string) => void;
   toggleCustomGroceryItem: (id: string) => void;
   selectedRecipe: Recipe | null;
   setSelectedRecipe: (recipe: Recipe | null) => void;
@@ -109,16 +108,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         await setDoc(doc(db, "userSettings", user.uid), { customGroceryItems: updated }, { merge: true });
       } catch (err) { console.error("Firebase settings save failed", err); }
-    }
-    saveLocalCustomItems(updated);
-  };
-
-  const removeCustomGroceryItem = async (id: string) => {
-    const updated = customGroceryItems.filter(i => i.id !== id);
-    if (user && isFirebaseActive) {
-      try {
-        await setDoc(doc(db, "userSettings", user.uid), { customGroceryItems: updated }, { merge: true });
-      } catch (err) { }
     }
     saveLocalCustomItems(updated);
   };
@@ -276,7 +265,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider value={{
       recipes, addRecipe, updateRecipe, deleteRecipe, toggleFavorite, isFirebaseActive,
       inStockItems, addInStockItem, removeInStockItem,
-      customGroceryItems, addCustomGroceryItem, removeCustomGroceryItem, toggleCustomGroceryItem,
+      customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem,
       selectedRecipe, setSelectedRecipe, firebaseError,
       user, authLoading, logout,
       isGuestMode, setIsGuestMode

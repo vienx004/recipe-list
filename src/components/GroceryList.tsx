@@ -4,11 +4,11 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { ShoppingCart, CheckSquare, Square, Plus, Trash2 } from 'lucide-react';
+import { ShoppingCart, CheckSquare, Square, Plus } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export const GroceryList: React.FC = () => {
-  const { recipes, inStockItems, customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem, removeCustomGroceryItem } = useStore();
+  const { recipes, inStockItems, customGroceryItems, addCustomGroceryItem, toggleCustomGroceryItem } = useStore();
   const [customInput, setCustomInput] = useState('');
 
   // Tracks explicit toggles, overriding Pantry defaults.
@@ -138,7 +138,7 @@ export const GroceryList: React.FC = () => {
                   >
                     <div
                       className="flex items-center gap-4 cursor-pointer flex-1"
-                      onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, false)}
+                      onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleItem(itemId!, false)}
                     >
                       <div className="transition-colors text-textSecondary group-hover:text-secondary">
                         <Square size={24} />
@@ -152,14 +152,6 @@ export const GroceryList: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    {item.isCustom && (
-                      <button
-                        onClick={() => removeCustomGroceryItem(item.id)}
-                        className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    )}
                   </li>
                 );
               })}
@@ -182,7 +174,7 @@ export const GroceryList: React.FC = () => {
                     >
                       <div
                         className="flex items-center gap-4 cursor-pointer flex-1"
-                        onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id) : toggleItem(itemId, true)}
+                        onClick={() => item.isCustom ? toggleCustomGroceryItem(item.id!) : toggleItem(itemId!, true)}
                       >
                         <div className="transition-colors text-secondary group-hover:text-textPrimary">
                           <CheckSquare size={24} />
@@ -196,14 +188,6 @@ export const GroceryList: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      {item.isCustom && (
-                        <button
-                          onClick={() => removeCustomGroceryItem(item.id)}
-                          className="text-textSecondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-red-500/10"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
                     </li>
                   );
                 })}
