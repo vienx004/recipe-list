@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  /* Prevent accidental horizontal scrolling and rubber-banding at the root document level */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-textPrimary antialiased selection:bg-secondary/30;
   }

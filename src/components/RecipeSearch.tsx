@@ -104,7 +104,12 @@ export const RecipeSearch: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent md:bg-gradient-to-r" />
           </div>
 
-          <div className="w-full md:w-3/5 p-8 flex flex-col gap-6 relative z-10">
+          {/*
+            Responsive Content Box Padding:
+            Replaced static 'p-8' with responsive padding 'p-4 sm:p-6 md:p-8' to optimize horizontal
+            screen real estate and prevent clipping/overflow on smaller mobile devices.
+          */}
+          <div className="w-full md:w-3/5 p-4 sm:p-6 md:p-8 flex flex-col gap-6 relative z-10">
             <div>
               <div className="flex items-center gap-3 text-textSecondary mb-2 font-medium">
                 <Clock size={16} /> {generatedRecipe.prepTimeMinutes} mins

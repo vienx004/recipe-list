@@ -35,19 +35,33 @@ export const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      {/* Top Navigation Bar with Glassmorphism */}
-      <header className="sticky top-0 z-50 glass-panel border-b border-secondary/20 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-secondary to-accent p-2 rounded-xl shadow-lg shadow-accent/20">
-            <ChefHat className="text-textPrimary" size={28} />
+      {/* 
+        Responsive Header:
+        Adjusted padding (px-4 py-3 on mobile, px-6 py-4 on desktop) to optimize mobile viewport space
+        and prevent horizontal content overflow.
+      */}
+      <header className="sticky top-0 z-50 glass-panel border-b border-secondary/20 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between gap-2">
+        {/*
+          Responsive Logo and Title:
+          Scale down the padding and text size on mobile viewports (text-xl, p-1.5, ChefHat size 22)
+          to ensure the header content fits perfectly on narrow devices (e.g. 320px - 375px screens)
+          without forcing horizontal scrolling.
+        */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="bg-gradient-to-br from-secondary to-accent p-1.5 sm:p-2 rounded-xl shadow-lg shadow-accent/20">
+            <ChefHat className="text-textPrimary" size={22} />
           </div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-textPrimary to-textSecondary">
+          <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-textPrimary to-textSecondary">
             Recipe Planner
           </h1>
         </div>
 
-        {/* Status Indicator for Firebase. Helpful for debugging without breaking UX */}
-        <div className="text-xs font-medium px-3 py-1.5 rounded-full border border-secondary/20 flex items-center gap-2 relative">
+        {/* 
+          Status Indicator for Firebase:
+          Hidden on mobile viewports (hidden sm:flex) to save horizontal space.
+          On larger viewports, it displays normally.
+        */}
+        <div className="text-xs font-medium px-3 py-1.5 rounded-full border border-secondary/20 hidden sm:flex items-center gap-2 relative">
           <div className={`w-2 h-2 rounded-full ${isFirebaseActive ? 'bg-secondary' : 'bg-orange-500'}`} />
           <span className="hidden sm:inline">
             {isFirebaseActive ? 'Cloud Sync Active' : 'Local Storage Mode'}
@@ -59,10 +73,15 @@ export const Layout: React.FC = () => {
           )}
         </div>
 
+        {/*
+          Responsive Action Button:
+          Adjusted margin and padding on mobile (px-3 py-1.5 text-xs) versus desktop
+          to preserve layout symmetry and fit compact viewports.
+        */}
         {user ? (
           <button
             onClick={() => logout()}
-            className="ml-4 p-2 text-textSecondary hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-full"
+            className="ml-2 sm:ml-4 p-2 text-textSecondary hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-full"
             title="Sign Out"
           >
             <LogOut size={18} />
@@ -70,7 +89,7 @@ export const Layout: React.FC = () => {
         ) : (
           <button
             onClick={() => setIsGuestMode(false)}
-            className="ml-4 px-4 py-2 text-sm font-bold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors rounded-xl"
+            className="ml-2 sm:ml-4 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-colors rounded-xl"
             title="Sign In"
           >
             Sign In

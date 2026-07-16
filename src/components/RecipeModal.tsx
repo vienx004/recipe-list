@@ -121,8 +121,12 @@ export const RecipeModal: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-surface to-transparent" />
           </div>
 
-          {/* Content Box */}
-          <div className="w-full md:w-3/5 p-8 flex flex-col gap-6 relative z-10 bg-surface">
+          {/*
+            Responsive Content Box Padding:
+            Replaced static 'p-8' with responsive padding 'p-4 sm:p-6 md:p-8' to maximize space and
+            prevent horizontal layout squishing on mobile viewports.
+          */}
+          <div className="w-full md:w-3/5 p-4 sm:p-6 md:p-8 flex flex-col gap-6 relative z-10 bg-surface">
             
             {/* Header Block */}
             <div>
