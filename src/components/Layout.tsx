@@ -125,14 +125,23 @@ export const Layout: React.FC = () => {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="p-6 md:p-8 lg:p-12 relative z-10 w-full h-full overflow-y-auto">
+          {/* 
+            Responsive Layout Container Padding:
+            Added 'pb-24' on mobile viewports to prevent content from being cut off or obscured
+            by the fixed bottom navigation bar, which resets to normal 'md:p-8' on larger viewports.
+          */}
+          <div className="p-6 pb-24 md:p-8 lg:p-12 relative z-10 w-full h-full overflow-y-auto">
             <Outlet />
           </div>
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation (Visible only on small screens) */}
-      <nav className="md:hidden sticky bottom-0 z-50 glass-panel border-t border-secondary/20 flex justify-around p-4 pb-safe justify-items-center">
+      {/* 
+        Fixed Mobile Bottom Navigation:
+        Changed positioning from 'sticky' to 'fixed bottom-0 left-0 right-0' to keep the nav bar
+        permanently anchored at the bottom of the viewport regardless of page height.
+      */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-secondary/20 flex justify-around p-4 pb-safe justify-items-center">
         {navItems.map(item => (
           <NavLink
             key={item.to}
