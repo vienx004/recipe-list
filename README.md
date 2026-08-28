@@ -1,3 +1,13 @@
+# Recipe Planner app that generates full recipes with Gemini. Plan what you want to make while on the go!
+- Calendar view feature to add saved recipes or new recipes.
+- Don't have a dish in mind, just type what you have in the search bar and it'll generate a recipe for you.
+- Added recipes to the calendar updates your grocery list with all the ingredients.
+- If you already have an ingredient in your pantry, the app checks off the added grocery items automatically.
+
+  https://recipe-list-ba995.web.app/
+
+Built and deployed with Google Cloud Platform
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
